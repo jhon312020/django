@@ -1,0 +1,7 @@
+{% load staticfiles %}
+<form action="{% url 'users:create' %}" method="post">
+	{% csrf_token %}
+	<label>Username</label><input type='text' name='username' value=''>
+	<lable>Password</lable><input type='password' name='password' value=''>
+	<input type="submit" value="Register" />
+</form>
