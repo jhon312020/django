@@ -1,0 +1,22 @@
+{% extends 'users/layout.html' %}
+{% block title %}
+	<TITLE>LIST USERS</TITLE>
+{% endblock %}
+{% block content %}
+		<table>
+			<thead>
+				<tr><th>Id</th><th>Username</th><th>Password</th></tr>
+			</thead>
+			<tbody>
+				{% if user_list %}
+					{% for users in user_list %}
+						<tr>
+							<td>{{ users.id }}</td>
+							<td>{{ users.user_name }}</td>
+							<td>{{ users.password }}</td>
+						</tr>
+					{% endfor %}
+				{% endif %}
+			</tbody>
+		</table>
+{% endblock %}
