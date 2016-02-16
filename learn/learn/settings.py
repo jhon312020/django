@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+	'users.apps.UsersConfig',
+	'rest_framework.authtoken',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -81,7 +83,7 @@ DATABASES = {
     #~ }
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'python_django',
+        'NAME': 'python_django_auth',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',

@@ -1,0 +1,24 @@
+{% extends 'users/layout.html' %}
+{% block title %}
+	<TITLE>Users List</TITLE>
+{% endblock %}
+{% block content %}
+		<h2>User List</h2>
+		<table class='table table-bordered'>
+			<thead>
+				<tr><th>Id</th><th>Username</th></tr>
+			</thead>
+			<tbody>
+				{% if user_list %}
+					{% for users in user_list %}
+						<tr>
+							<td>{{ users.id }}</td>
+							<td>{{ users.user_name }}</td>
+						</tr>
+					{% endfor %}
+				{% endif %}
+			</tbody>
+		</table>
+		<a href="{% url 'users:register' %}" class="btn btn-primary" role="button">Register</a>
+		<a href="{% url 'users:login' %}" class="btn btn-primary" role="button">Login</a>
+{% endblock %}
