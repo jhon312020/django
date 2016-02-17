@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
 	'users.apps.UsersConfig',
+	'tweets.apps.TweetsConfig',
 	'rest_framework.authtoken',
     'django.contrib.admin',
     'django.contrib.auth',
