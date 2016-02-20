@@ -1,6 +1,8 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
+from django.forms.models import model_to_dict
+from django.core import serializers
 
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
@@ -110,21 +112,116 @@ class FavouriteView(APIView):
 		try:
 			token = Token.objects.get(key=token_value)
 			tweet = Tweets.objects.get(id=tweet_id)
+			try:
+				already_voted = TweetFavourite.objects.get(user_id = token.user_id, tweet_id = tweet_id)
+			except TweetFavourite.DoesNotExist:
+				already_voted = None
+			if token.user_id == tweet.user_id:
+				return Response({'message' : 'You cannot add favourite to your own tweet!'})
+			elif already_voted is None:
 			#{"token":"880bd799194db2f2541468af129b2499d3404147", "tweet_id":"1"}
-			tweet = TweetFavourite.objects.create(user_id = token.user_id, tweet_id = tweet_id, tweet_like = 1)
-			tweet.save()
+			#{"token":"de39fb3251756d3e7e75be84b3d45e9ed74e5e6e", "tweet_id":"1"}
+				tweet = TweetFavourite.objects.create(user_id = token.user_id, tweet_id = tweet_id, tweet_like = 1)
+				tweet.save()
+			else:
+				return Response({'message':'Sorry! you have already added your vote for this tweet!'})
 			if tweet is None:
 				return Response({'message':'Some server issue try after sometime!'})
 			else:
 				return Response({'message':'Your favourite has been added!'})
-		except token.DoesNotExist or tweet.DoesNotExist:
+		except Token.DoesNotExist:
 			# Checking for token existence
 			logger.info('Invalid token ' + token_value)
 			return Response({'message': 'Invalid token, Kindly login again'})
-		except tweet.DoesNotExist:
+		except Tweets.DoesNotExist:
 			# Checking for tweet existence
 			logger.info('Invalid tweet ' + tweet_id)
+			return Response({'message': 'Invalid tweet id or tweet doesn\'t exsits!'})
+		except Exception as exception:
+			logger.error(exception)
+			return Response(status=500)
+
+# Endpoint is Used for creating friendship with user
+# Returns a message
+# on successful friendship creation
+# Endpoint url : /tweets/friendships/create/
+class FriendCreateView(APIView):
+	authentication_classes = (authentication.TokenAuthentication,)
+	#permission_classes = (permissions.AllowAny,)
+	def post(self, request, format=None):
+		params = json.loads(request.body.decode('utf-8'))
+
+		token_value = params.get('token')
+		friend_id = params.get('friend_id')
+		
+
+		if token_value is None or friend_id is None:
+			return Response(status=401)
+			
+		try:
+			token = Token.objects.get(key=token_value)
+			friend_id_exists = User.objects.get(id=friend_id)
+			#return Response({'user_id':token.user_id, 'friend_id': friend_id})
+
+			try:
+				already_is_a_friend = Friends.objects.get(user_id = token.user_id, friend_id=friend_id)
+				return Response({'message': 'You have already made friendship with this person!', 'id': already_is_a_friend.friend_id})
+
+			except Friends.DoesNotExist:
+				#{"token":"880bd799194db2f2541468af129b2499d3404147", "friend_id":"2"}
+				friend = Friends.objects.create(user_id = token.user_id, friend_id = friend_id)
+				friend.save()
+
+				if friend is None:
+					return Response({'message':'Some server issue try after sometime!'})
+				else:
+					return Response({'message':'You have currently made friendship with the user successfully!'})
+
+		except Token.DoesNotExist:
+			# Returning response on invalid tokens
+			logger.info('Invalid token ' + token_value)
 			return Response({'message': 'Invalid token, Kindly login again'})
+		
+		except User.DoesNotExist:
+			# Returning error on unexistence of the user
+			return Response({'message': 'The friendship is not possible as the user doesn\'t exists!'})
+
+		except Exception as exception:
+			logger.error(exception)
+			return Response(status=500)
+
+# Endpoint is Used get user's friend's list
+# Returns a message
+# on successful friendship creation
+# Endpoint url : /tweets/friendships/create/
+#{"token":"880bd799194db2f2541468af129b2499d3404147"}
+class FriendListView(APIView):
+	authentication_classes = (authentication.TokenAuthentication,)
+	#permission_classes = (permissions.AllowAny,)
+	def post(self, request, format=None):
+		params = json.loads(request.body.decode('utf-8'))
+
+		token_value = params.get('token')
+		#return Response({'friend_list': token_value})
+
+		if token_value is None:
+			return Response(status=401)
+
+		try:
+			token = Token.objects.get(key=token_value)
+			friends = Friends.objects.filter(user_id = token.user_id)
+			friend_ids = []
+			for friend in friends:
+				friend_ids.append(friend.friend_id)
+			data = {'friend_list': serializers.serialize('json', friend_ids)}
+			#data = {'friend_list': serializers.serialize('json', friends)}
+			return Response(data)
+
+		except Token.DoesNotExist:
+			# Returning response on invalid tokens
+			logger.info('Invalid token ' + token_value)
+			return Response({'message': 'Invalid token, Kindly login again'})
+
 		except Exception as exception:
 			logger.error(exception)
 			return Response(status=500)

@@ -22,3 +22,9 @@ class TweetFavourite(models.Model):
 	
 	tweet_like = models.BooleanField(max_length=150)
 	created = models.DateTimeField(auto_now_add=True)
+
+class Friends(models.Model):
+	user = models.ForeignKey(User, on_delete = models.CASCADE)
+	
+	friend_id = models.IntegerField()
+	created = models.DateTimeField(auto_now_add=True)
