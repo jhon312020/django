@@ -144,7 +144,8 @@ class FavouriteView(APIView):
 # Endpoint is Used for creating friendship with user
 # Returns a message
 # on successful friendship creation
-# Endpoint url : /tweets/friendships/create/
+# Endpoint url : /tweets/friendships/create
+#{"token":"880bd799194db2f2541468af129b2499d3404147", "friend_id":"2"}
 class FriendCreateView(APIView):
 	authentication_classes = (authentication.TokenAuthentication,)
 	#permission_classes = (permissions.AllowAny,)
@@ -168,7 +169,6 @@ class FriendCreateView(APIView):
 				return Response({'message': 'You have already made friendship with this person!', 'id': already_is_a_friend.friend_id})
 
 			except Friends.DoesNotExist:
-				#{"token":"880bd799194db2f2541468af129b2499d3404147", "friend_id":"2"}
 				friend = Friends.objects.create(user_id = token.user_id, friend_id = friend_id)
 				friend.save()
 
@@ -193,9 +193,9 @@ class FriendCreateView(APIView):
 # Endpoint is Used get user's friend's list
 # Returns a message
 # on successful friendship creation
-# Endpoint url : /tweets/friendships/create/
+# Endpoint url : /tweets/friends/list/
 #{"token":"880bd799194db2f2541468af129b2499d3404147"}
-class FriendListView(APIView):
+class FriendsListView(APIView):
 	authentication_classes = (authentication.TokenAuthentication,)
 	#permission_classes = (permissions.AllowAny,)
 	def post(self, request, format=None):
@@ -210,10 +210,58 @@ class FriendListView(APIView):
 		try:
 			token = Token.objects.get(key=token_value)
 			friends = Friends.objects.filter(user_id = token.user_id)
+			friends_count = friends.count();
 			friend_ids = []
-			for friend in friends:
-				friend_ids.append(friend.friend_id)
-			data = {'friend_list': serializers.serialize('json', friend_ids)}
+			if friends_count > 0:
+				for friend in friends:
+					friend_ids.append(friend.friend_id)
+				friends_list = User.objects.filter(id__in = friend_ids)
+				response = map(lambda t: model_to_dict(t), friends_list)
+				return Response(response)
+			else:
+				return Response({'message': 'Currently! no friends for the user'})
+			#data = {'friend_list': serializers.serialize('json', friends)}
+			return Response(data)
+
+		except Token.DoesNotExist:
+			# Returning response on invalid tokens
+			logger.info('Invalid token ' + token_value)
+			return Response({'message': 'Invalid token, Kindly login again'})
+
+		except Exception as exception:
+			logger.error(exception)
+			return Response(status=500)
+
+# Endpoint is Used get user's friend's list
+# Returns a message
+# on successful friendship creation
+# Endpoint url : /tweets/friends/list/
+#{"token":"de39fb3251756d3e7e75be84b3d45e9ed74e5e6e"}
+class FollowersListView(APIView):
+	authentication_classes = (authentication.TokenAuthentication,)
+	#permission_classes = (permissions.AllowAny,)
+	def post(self, request, format=None):
+		params = json.loads(request.body.decode('utf-8'))
+
+		token_value = params.get('token')
+		#return Response({'friend_list': token_value})
+
+		if token_value is None:
+			return Response(status=401)
+
+		try:
+			token = Token.objects.get(key=token_value)
+			followers = Friends.objects.filter(friend_id = token.user_id)
+			followers_count = followers.count();
+			followers_ids = []
+			if friends_count > 0:
+				for follower in followers:
+					followers_ids.append(follower.user_id)
+				followers_list = User.objects.filter(id__in = followers_ids)
+				response = map(lambda t: model_to_dict(t), followers_list)
+				return Response(response)
+			else:
+				return Response({'message': 'Currently! no followers for the user'})
 			#data = {'friend_list': serializers.serialize('json', friends)}
 			return Response(data)
 

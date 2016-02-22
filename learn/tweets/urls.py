@@ -7,5 +7,6 @@ urlpatterns = [
 	url(r'statuses/update$', views.TweetView.as_view()),
 	url(r'favorites/create$', views.FavouriteView.as_view()),
 	url(r'friendships/create$', views.FriendCreateView.as_view()),
-	url(r'friends/list$', views.FriendListView.as_view()),
+	url(r'friends/list$', views.FriendsListView.as_view()),
+	url(r'followers/list$', views.FollowersListView.as_view()),
 ]
