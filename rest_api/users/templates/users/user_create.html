@@ -2,8 +2,8 @@
 {% block title %}
 	<TITLE>Create User</TITLE>
 {% endblock %}
-{% block content %}	
-	<div class="row">		
+{% block content %}
+	<div class="row">
 	</div>
 	<div class="row">
   		<div class="col-sm-4"></div>
@@ -16,7 +16,7 @@
 	  				{% endif %}
 					{% if success_message %}
 	  				<div class="alert alert-success">{{ success_message }}</div>
-	  				{% endif %}	  				
+	  				{% endif %}
 					<form class="form-horizontal" role="form" method="post" action="{% url 'users:user_create' %}">
 					{% csrf_token %}
 					  <div class="form-group">
