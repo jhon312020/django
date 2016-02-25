@@ -34,15 +34,16 @@ def tweet_create(request):
 	return render(request, 'tweets/tweet.html', content)
 
 def tweet_media_post(request):
+	content = {'success_message':'Successfully tweeted!'}
 	if request.method == 'POST':
-		token = request.POST['token']
-		token = Token.objects.get(key=token)
-		if token is not None:
+		#token = request.POST['token']
+		#token = Token.objects.get(key=token)
+		#if token is not None:
 			# Getting the stored rest framework token
-			tweetText = request.POST['tweet_text']
+			#tweetText = request.POST['tweet_text']
 			if handle_uploaded_file(request.FILES['tweet_media']):
 				file_name = request.FILES['tweet_media']._get_name()
-				tweet = TweetMedia.objects.create(user_id = token.user_id, tweet_text = tweetText, tweet_media = file_name)
+				tweet = TweetMedia.objects.create(user_id = 1, tweet_text = 'jr test', tweet_media = file_name)
 				tweet.save()
 				if tweet.id:
 					content = {'success_message':'Successfully tweeted!'}

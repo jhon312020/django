@@ -9,4 +9,5 @@ urlpatterns = [
 	url(r'friendships/create$', views.FriendCreateView.as_view()),
 	url(r'friends/list$', views.FriendsListView.as_view()),
 	url(r'followers/list$', views.FollowersListView.as_view()),
+	url(r'^media_create$', views.tweet_media_post, name = 'tweet_media_post'),
 ]
