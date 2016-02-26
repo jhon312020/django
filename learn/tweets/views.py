@@ -25,41 +25,34 @@ def index(request):
 	context = {'testing': 'testing'}
 	return JsonResponse(context)
 
-# User tweet posting
-def tweet_create(request):
-	userName = 'cygnusbala'
-	user = User.objects.get(username=userName)
-	token = Token.objects.get(user=user)
-	content = {'token': token.key}
-	return render(request, 'tweets/tweet.html', content)
+class MediaView(APIView):
+	authentication_classes = (authentication.TokenAuthentication,)
+	permission_classes = (IsAuthenticated,)
 
-def tweet_media_post(request):
-	content = {'success_message':'Successfully tweeted!'}
-	if request.method == 'POST':
-		#token = request.POST['token']
-		#token = Token.objects.get(key=token)
-		#if token is not None:
-			# Getting the stored rest framework token
-			#tweetText = request.POST['tweet_text']
-			if handle_uploaded_file(request.FILES['tweet_media']):
+	def post(self, request, format=None):
+		if request.user is None:
+			return Response(status=401)
+		if request.method == 'POST':
+			if self.handle_uploaded_file(request.FILES['tweet_media']):
+				tweetText = request.POST['tweet_text']
 				file_name = request.FILES['tweet_media']._get_name()
-				tweet = TweetMedia.objects.create(user_id = 1, tweet_text = 'jr test', tweet_media = file_name)
+				tweet = TweetMedia.objects.create(user_id = request.user.id, tweet_text = tweetText, tweet_media = file_name)
 				tweet.save()
 				if tweet.id:
 					content = {'success_message':'Successfully tweeted!'}
 				else:
 					content = {'error_message':'Try after some time'}
-	return JsonResponse(content)
+		return JsonResponse(content)
 
-def handle_uploaded_file(f):
-	MEDIA_ROOT = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'uploads')
-	file_path = os.path.join(MEDIA_ROOT, f._get_name());
-	#file_path = os.path.join(MEDIA_ROOT);
-	destination = open(file_path, 'wb+')
-	for chunk in f.chunks():
-		destination.write(chunk)
-	destination.close()
-	return True
+	def handle_uploaded_file(self, f):
+		MEDIA_ROOT = os.path.join(os.path.abspath(os.path.dirname(os.path.dirname(__file__))), 'uploads')
+		file_path = os.path.join(MEDIA_ROOT, f._get_name());
+		#file_path = os.path.join(MEDIA_ROOT);
+		destination = open(file_path, 'wb+')
+		for chunk in f.chunks():
+			destination.write(chunk)
+		destination.close()
+		return True
 
 # Endpoint is Used for posting status update
 # Returns a message
