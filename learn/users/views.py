@@ -41,13 +41,10 @@ class AuthenticateView(APIView):
 
 		try:
 			user = authenticate(username=username, password=password)
-			token, _ = Token.objects.get_or_create(user=user)
-			return Response({'token':token.key})
-		except User.DoesNotExist:
-			# For security purposes, the user not existing returns
-			# the same code as invalid credentails
-			logger.info('Login attempt for user that does not exist!')
-			return Response(status=401)
+			if user is not None:
+				token, _ = Token.objects.get_or_create(user=user)
+				return Response({'token':token.key})
+			return Response({'message':'Invalid username/password or account doesn\'t exists'})
 		except Exception as exception:
 			logger.error(exception)
 			return Response(status=500)

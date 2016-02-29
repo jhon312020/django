@@ -10,6 +10,7 @@ urlpatterns = [
 	url(r'friends/list$', views.FriendsListView.as_view()),
 	url(r'followers/list$', views.FollowersListView.as_view()),
 	url(r'media/upload$', views.MediaView.as_view()),
+	url(r'statuses/home_timeline$', views.HomeTimeLine.as_view()),
 ]
 
 

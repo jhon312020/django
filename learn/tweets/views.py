@@ -128,13 +128,16 @@ class FriendCreateView(APIView):
 	permission_classes = (IsAuthenticated,)
 	def post(self, request, format=None):
 		params = json.loads(request.body.decode('utf-8'))
+		
 		friend_id = params.get('friend_id')
-
+		#return Response({'message':request.user.id})
+		
 		if request.user is None or friend_id is None:
 			return Response(status=401)
+		elif request.user.id == int(friend_id):
+			return Response({'message':'You cannot be friend to yourself!'})
 		try:
 			friend_id_exists = User.objects.get(id=friend_id)
-
 			try:
 				already_is_a_friend = Friends.objects.get(user_id = request.user.id, friend_id=friend_id)
 				return Response({'message': 'You have already made friendship with this person!', 'id': already_is_a_friend.friend_id})
@@ -204,4 +207,36 @@ class FollowersListView(APIView):
 			return Response(response)
 		else:
 			return Response({'message': 'Currently! no followers for the user'})
+		return Response(data)
+
+
+# Endpoint is Used get the tweets should 
+# and the retweets of people the authenticated
+# users follows
+# Returns a list statuses/home_timeline
+# on successful 
+# Endpoint url : /tweets/statuses/home_timeline
+#{"token":"de39fb3251756d3e7e75be84b3d45e9ed74e5e6e"}
+class HomeTimeLine(APIView):
+	authentication_classes = (authentication.TokenAuthentication,)
+	permission_classes = (IsAuthenticated,)
+	#permission_classes = (permissions.AllowAny,)
+
+	def get(self, request, format=None):
+		if request.user is None:
+			return Response(status=401)
+		followers = Friends.objects.filter(user_id = request.user.id)
+		followers_count = followers.count();
+		followers_ids = []
+		# Adding the authenticated user id
+		followers_ids.append(request.user.id)
+		if followers_count > 0:
+			for follower in followers:
+				followers_ids.append(follower.friend_id)
+			print followers_ids
+			tweet_list = Tweets.objects.filter(user_id__in = followers_ids)
+			response = map(lambda t: model_to_dict(t), tweet_list)
+			return Response(response)
+		else:
+			return Response({'message': 'Currently no tweets'})
 		return Response(data)
