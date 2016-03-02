@@ -45,6 +45,7 @@ class AuthenticateView(APIView):
 				token, _ = Token.objects.get_or_create(user=user)
 				return Response({'token':token.key})
 			return Response({'message':'Invalid username/password or account doesn\'t exists'})
+			#return Response(status=401)
 		except Exception as exception:
 			logger.error(exception)
 			return Response(status=500)

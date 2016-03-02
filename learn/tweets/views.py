@@ -68,6 +68,8 @@ class TweetView(APIView):
 			return Response(status=401)
 		params = json.loads(request.body.decode('utf-8'))
 		user_status = params.get('tweet_text')
+		if user_status is None or user_status == '':
+			return Response(status=401)
 		tweet = Tweets.objects.create(user_id = request.user.id, tweet_text = user_status)
 		tweet.save()
 		if tweet is None:
@@ -112,7 +114,7 @@ class FavouriteView(APIView):
 
 		except Tweets.DoesNotExist:
 			# Checking for tweet existence
-			logger.info('Invalid tweet ' + tweet_id)
+			logger.info('Invalid tweet ' , tweet_id)
 			return Response({'message': 'Invalid tweet id or tweet doesn\'t exsits!'})
 		except Exception as exception:
 			logger.error(exception)
