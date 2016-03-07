@@ -92,7 +92,7 @@ class FavouriteView(APIView):
 		params = json.loads(request.body.decode('utf-8'))
 		tweet_id = params.get('tweet_id')
 
-		if request.user is None or tweet_id is None:
+		if request.user is None or tweet_id is None or tweet_id == '':
 			return Response(status=401)
 		try:
 			tweet = Tweets.objects.get(id=tweet_id)
@@ -134,7 +134,7 @@ class FriendCreateView(APIView):
 		friend_id = params.get('friend_id')
 		#return Response({'message':request.user.id})
 		
-		if request.user is None or friend_id is None:
+		if request.user is None or friend_id is None or friend_id == '':
 			return Response(status=401)
 		elif request.user.id == int(friend_id):
 			return Response({'message':'You cannot be friend to yourself!'})
@@ -188,7 +188,7 @@ class FriendsListView(APIView):
 # Endpoint is Used get user's friend's list
 # Returns a message
 # on successful friendship creation
-# Endpoint url : /tweets/friends/list
+# Endpoint url : /tweets/followers/list
 #{"token":"de39fb3251756d3e7e75be84b3d45e9ed74e5e6e"}
 class FollowersListView(APIView):
 	authentication_classes = (authentication.TokenAuthentication,)
@@ -235,7 +235,7 @@ class HomeTimeLine(APIView):
 		if followers_count > 0:
 			for follower in followers:
 				followers_ids.append(follower.friend_id)
-			print followers_ids
+			#print followers_ids
 			tweet_list = Tweets.objects.filter(user_id__in = followers_ids)
 			response = map(lambda t: model_to_dict(t), tweet_list)
 			return Response(response)
